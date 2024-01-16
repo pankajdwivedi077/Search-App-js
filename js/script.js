@@ -1,38 +1,48 @@
-import { setSearchFocus } from './searchBar.js';
-import { getSearchTerm } from './dataFunctions.js';
-import { retrieveSearchResults } from './dataFunctions.js'
-
-document.addEventListener("readystatechange", (e) => {
-    if(e.target.readyState === "complete") {
-       initApp();
+import {
+    setSearchFocus,
+    showClearTextButton,
+    clearSearchText,
+    clearPushListener
+  } from "./searchBar.js";
+  import {
+    deleteSearchResults,
+    buildSearchResults,
+    clearStatsLine,
+    setStatsLine
+  } from "./searchResults.js";
+  import { getSearchTerm, retrieveSearchResults } from "./dataFunctions.js";
+  
+  document.addEventListener("readystatechange", (event) => {
+    if (event.target.readyState === "complete") {
+      initApp();
     }
-});
-
-const initApp = () => {
+  });
+  
+  const initApp = () => {
     setSearchFocus();
-
-    // 3 listeners clear text
-
+    const search = document.getElementById("search");
+    search.addEventListener("input", showClearTextButton);
+    const clear = document.getElementById("clear");
+    clear.addEventListener("click", clearSearchText);
+    clear.addEventListener("keydown", clearPushListener);
     const form = document.getElementById("searchBar");
     form.addEventListener("submit", submitTheSearch);
-};
-
-// procedural workflow function  || call the when we need them
-
-const submitTheSearch = (e) => {
-  e.preventDefault();
-// delete the search results
-processTheSearch();
-
-setSearchFocus();
-
-};
-
-// procedural
-const processTheSearch = async () => {
-    // clear the stats line
+  };
+  
+  // Procedural "workflow" function
+  const submitTheSearch = (event) => {
+    event.preventDefault();
+    deleteSearchResults();
+    processTheSearch();
+    setSearchFocus();
+  };
+  
+  // Procedural
+  const processTheSearch = async () => {
+    clearStatsLine();
     const searchTerm = getSearchTerm();
-    if (searchTerm === "") return;
+    if (searchTerm === "") return; //TODO:
     const resultArray = await retrieveSearchResults(searchTerm);
-    
-}
+    if (resultArray.length) buildSearchResults(resultArray);
+    setStatsLine(resultArray.length);
+  };
